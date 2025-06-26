@@ -79,6 +79,10 @@ jobs:
           sed -i "s/demoacr1234567890/demoacr${UNIQUE_SUFFIX}/g" terraform.tfvars
           sed -i "s/demokv1234567890/demokv${UNIQUE_SUFFIX}/g" terraform.tfvars
           
+          # Update monitoring resource names for uniqueness (optional but recommended)
+          sed -i "s/log_analytics_workspace_name = \"aks-demo-logs\"/log_analytics_workspace_name = \"aks-demo-logs-${UNIQUE_SUFFIX}\"/g" terraform.tfvars
+          sed -i "s/application_insights_name = \"aks-demo-insights\"/application_insights_name = \"aks-demo-insights-${UNIQUE_SUFFIX}\"/g" terraform.tfvars
+          
           echo "Generated unique resource names with suffix: ${UNIQUE_SUFFIX}"
         fi
 

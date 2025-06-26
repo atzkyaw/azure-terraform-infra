@@ -105,6 +105,14 @@ acr_name = "demoacr1234567890"          # CHANGE THIS - must be globally unique
 # Key Vault (must be globally unique)
 kv_name = "demokv1234567890"            # CHANGE THIS - must be globally unique
 
+# Monitoring Configuration
+log_analytics_workspace_name = "aks-demo-logs"
+application_insights_name = "aks-demo-insights"
+log_retention_days = 30
+
+# Alert Configuration (optional)
+# alert_email = "your-email@example.com"
+
 # Azure Active Directory Configuration (optional)
 # aad_group_object_id = "your-aad-group-object-id"
 # tenant_id = "your-tenant-id"
@@ -170,7 +178,34 @@ az aks get-credentials --resource-group rg-aks-demo --name demoaks
 
 # Test kubectl access
 kubectl get nodes
+
+# Check monitoring setup
+az monitor log-analytics workspace show --resource-group rg-aks-demo --workspace-name aks-demo-logs
 ```
+
+## 📊 Monitoring Setup Verification
+
+After deployment, verify your monitoring setup:
+
+### Check Container Insights
+```bash
+# Verify OMS agent is running on AKS
+kubectl get pods -n kube-system | grep omsagent
+
+# Check node metrics
+kubectl top nodes
+
+# Check pod metrics  
+kubectl top pods --all-namespaces
+```
+
+### Access Monitoring Dashboards
+1. **Azure Portal** → **Monitor** → **Containers**
+2. **Select your AKS cluster** for Container Insights
+3. **Navigate to Log Analytics** for custom queries
+4. **Check Application Insights** for application performance
+
+For detailed monitoring information, see: [`MONITORING_GUIDE.md`](./MONITORING_GUIDE.md)
 
 ---
 

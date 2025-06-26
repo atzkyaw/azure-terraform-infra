@@ -50,7 +50,14 @@ override.tf.json
 # Exclude docs folder containing local documentation
 docs/
 COST_ANALYSIS.md
-
+.github/workflows/backend.yml
+ACTION_PLAN.md
+BRANCH_PROTECTION_GUIDE.md
+FIX_PERMISSIONS.md
+GITHUB_ACTIONS_CHECKLIST.md
+MONITORING_GUIDE.md
+README_NEW.md
+SECURITY_REPORT.md
 # Example files and test deployments
 rbac-examples/
 test-deployment.yaml

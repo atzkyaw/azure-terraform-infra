@@ -8,7 +8,15 @@ This project provisions a complete, production-ready Azure infrastructure for AK
 - **Azure Container Registry (ACR)**: Private container image registry
 - **Azure Key Vault**: Secure secrets and certificate management
 - **Virtual Network**: Isolated network with dedicated subnet for AKS
-- **Security Features**: RBAC, managed identities, and security scanning
+- **Monitoring**: Comprehensive observability with Log Analytics and Application Insights
+
+## ✨ Key Features
+
+- 🔒 **Security-first**: Azure AD integration, RBAC, network policies
+- 📊 **Full Monitoring**: Container Insights, Application Insights, custom alerts
+- 🚀 **CI/CD Ready**: GitHub Actions workflows for automated deployment
+- 💰 **Cost-optimized**: Right-sized resources with auto-scaling
+- 📖 **Well-documented**: Comprehensive guides for setup and operations
 
 ## 🗺️ Architecture
 ```
@@ -39,8 +47,8 @@ This project provisions a complete, production-ready Azure infrastructure for AK
 azure-terraform-infra/
 ├── .github/workflows/          # GitHub Actions CI/CD pipelines
 │   ├── terraform.yml          # Main infrastructure deployment
-│   ├── security.yml           # Security scanning (TFSec, Checkov)
-│   └── backend.yml            # Backend setup workflow
+│   └── security.yml           # Security scanning (TFSec, Checkov)
+│   
 ├── modules/                   # Reusable Terraform modules
 │   ├── aks/                  # AKS cluster configuration
 │   ├── acr/                  # Container registry

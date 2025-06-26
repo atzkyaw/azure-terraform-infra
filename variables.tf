@@ -58,3 +58,28 @@ variable "tenant_id" {
   type        = string
   default     = ""
 }
+
+# Monitoring Variables
+variable "log_analytics_workspace_name" {
+  description = "Name of the Log Analytics Workspace"
+  type        = string
+  default     = "aks-demo-logs"
+}
+
+variable "application_insights_name" {
+  description = "Name of the Application Insights instance"
+  type        = string
+  default     = "aks-demo-insights"
+}
+
+variable "alert_email" {
+  description = "Email address for monitoring alerts"
+  type        = string
+  default     = ""
+}
+
+variable "log_retention_days" {
+  description = "Number of days to retain logs in Log Analytics"
+  type        = number
+  default     = 30
+}

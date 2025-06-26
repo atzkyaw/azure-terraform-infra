@@ -91,6 +91,8 @@ az ad sp create-for-rbac --name "github-actions-terraform-aks" \
 - [ ] Check Azure Portal for created resources
 - [ ] Verify AKS cluster is running
 - [ ] Test kubectl access: `az aks get-credentials --resource-group rg-aks-demo --name demoaks`
+- [ ] Verify monitoring setup in Azure Portal → Monitor → Containers
+- [ ] Check Log Analytics workspace is receiving data
 
 ---
 
@@ -248,12 +250,14 @@ Once you complete the checklist above, your GitHub Actions CI/CD pipeline is rea
 - ✅ Manual deployment controls
 - ✅ Terraform state management
 - ✅ Cost-effective resource naming
+- ✅ Comprehensive monitoring and alerting
 
 ### Next Steps:
 - Deploy applications to your AKS cluster
 - Push images to your ACR 
 - Use Key Vault for secrets
 - Monitor costs in Azure Portal
+- Review monitoring dashboards and set up custom alerts
 
 ### Daily Usage:
 - **Push code changes** → Automatic planning and security scans

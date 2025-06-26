@@ -36,6 +36,14 @@ resource "azurerm_kubernetes_cluster" "aks" {
     dns_service_ip = "10.2.0.10"
     service_cidr   = "10.2.0.0/16"
   }
+
+  # Enable Container Insights if Log Analytics workspace is provided
+  dynamic "oms_agent" {
+    for_each = var.log_analytics_workspace_id != "" ? [1] : []
+    content {
+      log_analytics_workspace_id = var.log_analytics_workspace_id
+    }
+  }
 }
 
 # Grant AKS access to ACR

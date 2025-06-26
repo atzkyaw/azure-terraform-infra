@@ -34,3 +34,30 @@ output "subnet_id" {
   description = "ID of the AKS subnet"
   value       = module.network.subnet_id
 }
+
+# Monitoring Outputs
+output "log_analytics_workspace_id" {
+  description = "ID of the Log Analytics workspace"
+  value       = module.monitoring.log_analytics_workspace_id
+}
+
+output "log_analytics_workspace_name" {
+  description = "Name of the Log Analytics workspace"
+  value       = module.monitoring.log_analytics_workspace_name
+}
+
+output "application_insights_name" {
+  description = "Name of the Application Insights instance"
+  value       = module.monitoring.application_insights_name
+}
+
+output "application_insights_instrumentation_key" {
+  description = "Application Insights instrumentation key"
+  value       = module.monitoring.application_insights_instrumentation_key
+  sensitive   = true
+}
+
+output "monitoring_dashboard_url" {
+  description = "URL to access the monitoring dashboard"
+  value       = module.monitoring.monitoring_dashboard_url
+}

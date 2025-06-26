@@ -26,3 +26,12 @@ kv_name = "demokv1234567890"
 # TODO: Replace these with your actual values
 # aad_group_object_id = "YOUR_AAD_GROUP_OBJECT_ID"
 # tenant_id = "YOUR_TENANT_ID"
+
+# Monitoring Configuration
+log_analytics_workspace_name = "aks-demo-logs"
+application_insights_name = "aks-demo-insights"
+log_retention_days = 30
+
+# Alert Configuration
+# TODO: Add your email for monitoring alerts
+# alert_email = "your-email@example.com"

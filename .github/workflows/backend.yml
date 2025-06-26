@@ -1,0 +1,76 @@
+name: 'Setup Terraform Backend'
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform on backend'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_VERSION: '1.6.0'
+  WORKING_DIRECTORY: '../azure-terraform-infra-bootstrap-backend'
+
+jobs:
+  setup-backend:
+    name: 'Setup Terraform Backend'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: atzkyaw/azure-terraform-infra-bootstrap-backend
+        path: backend
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set Azure Terraform Environment Variables
+      run: |
+        # Extract credentials from AZURE_CREDENTIALS secret and set as environment variables
+        echo "ARM_CLIENT_ID=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .clientId)" >> $GITHUB_ENV
+        echo "ARM_CLIENT_SECRET=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .clientSecret)" >> $GITHUB_ENV
+        echo "ARM_SUBSCRIPTION_ID=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .subscriptionId)" >> $GITHUB_ENV
+        echo "ARM_TENANT_ID=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .tenantId)" >> $GITHUB_ENV
+
+    - name: Terraform Init (Backend)
+      working-directory: ./backend
+      run: terraform init
+
+    - name: Terraform Validate (Backend)
+      working-directory: ./backend
+      run: terraform validate
+
+    - name: Terraform Plan (Backend)
+      working-directory: ./backend
+      if: github.event.inputs.action == 'plan'
+      run: terraform plan
+
+    - name: Terraform Apply (Backend)
+      working-directory: ./backend
+      if: github.event.inputs.action == 'apply'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy (Backend)
+      working-directory: ./backend
+      if: github.event.inputs.action == 'destroy'
+      run: terraform destroy -auto-approve

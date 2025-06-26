@@ -1,0 +1,25 @@
+# Terraform variables for AKS infrastructure
+# This file contains the actual values for your deployment
+
+# Basic Configuration
+location = "southeastasia"
+resource_group = "rg-aks-demo"
+
+# Network Configuration
+vnet_name = "aks-vnet"
+vnet_cidr = "10.0.0.0/16"
+
+# AKS Configuration
+aks_name = "demoaks"
+dns_prefix = "demoaks"
+
+# Azure Container Registry
+acr_name = "demoacr1750914293"
+
+# Key Vault
+kv_name = "demokv1750914293"
+
+# Azure Active Directory Configuration
+# TODO: Replace these with your actual values
+# aad_group_object_id = "YOUR_AAD_GROUP_OBJECT_ID"
+# tenant_id = "YOUR_TENANT_ID"

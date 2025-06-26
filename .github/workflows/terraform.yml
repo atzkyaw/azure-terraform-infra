@@ -1,0 +1,153 @@
+name: 'Terraform Azure Infrastructure'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - '.github/workflows/terraform.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - '.github/workflows/terraform.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_VERSION: '1.6.0'
+  WORKING_DIRECTORY: '.'
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set Azure Terraform Environment Variables
+      run: |
+        # Extract credentials from AZURE_CREDENTIALS secret and set as environment variables
+        echo "ARM_CLIENT_ID=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .clientId)" >> $GITHUB_ENV
+        echo "ARM_CLIENT_SECRET=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .clientSecret)" >> $GITHUB_ENV
+        echo "ARM_SUBSCRIPTION_ID=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .subscriptionId)" >> $GITHUB_ENV
+        echo "ARM_TENANT_ID=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .tenantId)" >> $GITHUB_ENV
+
+    - name: Create terraform.tfvars from template
+      run: |
+        if [ ! -f terraform.tfvars ]; then
+          echo "Creating terraform.tfvars from template..."
+          cp terraform.tfvars.example terraform.tfvars
+          
+          # Generate unique suffixes for globally unique resources
+          TIMESTAMP=$(date +%s)
+          RANDOM_SUFFIX=$(echo $RANDOM | md5sum | head -c 8)
+          UNIQUE_SUFFIX="${TIMESTAMP}${RANDOM_SUFFIX}"
+          
+          # Update ACR and Key Vault names to be unique
+          sed -i "s/demoacr1234567890/demoacr${UNIQUE_SUFFIX}/g" terraform.tfvars
+          sed -i "s/demokv1234567890/demokv${UNIQUE_SUFFIX}/g" terraform.tfvars
+          
+          echo "Generated unique resource names with suffix: ${UNIQUE_SUFFIX}"
+        fi
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      if: github.event_name == 'pull_request' || github.event.inputs.action == 'plan' || github.event.inputs.action == ''
+      run: |
+        terraform plan -var-file="terraform.tfvars" -no-color -input=false
+      continue-on-error: true
+
+    - name: Update Pull Request
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`terraform
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+
+    - name: Terraform Apply
+      if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event.inputs.action == 'apply'
+      run: terraform apply -var-file="terraform.tfvars" -auto-approve -input=false
+
+    - name: Terraform Destroy
+      if: github.event.inputs.action == 'destroy'
+      run: terraform destroy -var-file="terraform.tfvars" -auto-approve -input=false
+
+    - name: Save terraform.tfvars as artifact
+      if: steps.plan.outcome == 'success' || steps.apply.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-tfvars
+        path: terraform.tfvars
+        retention-days: 30

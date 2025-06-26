@@ -1,0 +1,59 @@
+name: 'Security Scan'
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  tfsec:
+    name: 'Terraform Security Scan'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run tfsec
+      uses: aquasecurity/tfsec-action@v1.0.3
+      with:
+        soft_fail: true
+
+  checkov:
+    name: 'Checkov Security Scan'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Create reports directory
+      run: mkdir -p reports
+
+    - name: Run Checkov action
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: terraform
+        soft_fail: true
+        output_format: sarif
+        output_file_path: reports/results.sarif
+
+    - name: Upload SARIF file
+      if: always() && hashFiles('reports/results.sarif') != ''
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: reports/results.sarif
